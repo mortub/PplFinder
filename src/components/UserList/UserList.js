@@ -14,7 +14,7 @@ const COUNTRY_NAMES_BY_ISO_2 = {
   "ES": "Spain"
 }
 
-const UserList = ({ users, isLoading }) => {
+const UserList = ({ users, isLoading, callSetDidFavoritesUpdate }) => {
   const [hoveredUserId, setHoveredUserId] = useState();
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [checkedCountries, setCheckedCountries] = useState({
@@ -24,6 +24,25 @@ const UserList = ({ users, isLoading }) => {
     "DE":false,
     "ES":false
   });
+  const [favoriteUsers, setFavoriteUsers] = useState({});
+
+  const toggleFavoriteUser = (user) =>{
+    const newFavoriteUsers = createNewFavoriteUsers(user);
+    setFavoriteUsers(newFavoriteUsers);
+    localStorage.setItem('favoriteUsers', JSON.stringify(newFavoriteUsers));
+    if(callSetDidFavoritesUpdate){callSetDidFavoritesUpdate()}
+  }
+
+  const createNewFavoriteUsers = (user) =>{
+    const userId = user?.email;
+    const newFavoriteUsers = {...favoriteUsers};
+
+    if(newFavoriteUsers[userId]){ delete newFavoriteUsers[userId];
+    }else{
+      newFavoriteUsers[userId] = user;
+    }
+    return newFavoriteUsers;
+  }
 
   const handleMouseEnter = (index) => {
     setHoveredUserId(index);
@@ -64,9 +83,21 @@ const UserList = ({ users, isLoading }) => {
     return Object.values(checkedCountries).every((value)=> value === false);
   }
 
+  const setFavoriteUsersFromLocalStorage = () =>{
+    let newFavoriteUsers = localStorage.getItem('favoriteUsers');
+    if(newFavoriteUsers !== null){
+      newFavoriteUsers = JSON.parse(newFavoriteUsers);
+      setFavoriteUsers(newFavoriteUsers);
+    }
+  }
+
   useEffect(()=>{
     if(isAllUnchecked()){setFilteredUsers(users);}
   },[users]);
+
+  useEffect(()=>{
+    setFavoriteUsersFromLocalStorage();
+  },[]);
 
   return (
     <S.UserList>
@@ -98,10 +129,12 @@ const UserList = ({ users, isLoading }) => {
                   {user?.location.city} {user?.location.country}
                 </Text>
               </S.UserInfo>
-              <S.IconButtonWrapper isVisible={index === hoveredUserId}>
+              <S.IconButtonWrapper isVisible={index === hoveredUserId || favoriteUsers[user?.email]}>
+                <div onClick={() =>toggleFavoriteUser(user)}>
                 <IconButton>
                   <FavoriteIcon color="error" />
                 </IconButton>
+                </div>
               </S.IconButtonWrapper>
             </S.User>
           );
