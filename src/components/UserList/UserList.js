@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Text from "components/Text";
 import Spinner from "components/Spinner";
 import CheckBox from "components/CheckBox";
@@ -6,8 +6,24 @@ import IconButton from "@material-ui/core/IconButton";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import * as S from "./style";
 
+const COUNTRY_NAMES_BY_ISO_2 = {
+  "BR":"Brazil",
+  "AU":"Australia",
+  "CA":"Canada",
+  "DE":"Germany",
+  "ES": "Spain"
+}
+
 const UserList = ({ users, isLoading }) => {
   const [hoveredUserId, setHoveredUserId] = useState();
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [checkedCountries, setCheckedCountries] = useState({
+    "BR":false,
+    "AU":false,
+    "CA":false,
+    "DE":false,
+    "ES":false
+  });
 
   const handleMouseEnter = (index) => {
     setHoveredUserId(index);
@@ -17,16 +33,52 @@ const UserList = ({ users, isLoading }) => {
     setHoveredUserId();
   };
 
+  const filterUsersAccordingToCountry = useCallback((value) => {
+    toggleCountryCheck(value);
+    if(isAllUnchecked()){
+      setFilteredUsers(users);
+      return;
+    }
+    setFilterUsersAccordingToCountries();
+  });
+
+  const toggleCountryCheck = (value) =>{
+    checkedCountries[value] = !checkedCountries[value];
+    setCheckedCountries(checkedCountries);
+  }
+
+  const setFilterUsersAccordingToCountries = () =>{
+    const countryNames = getAllCheckedCountryNames();
+    const newfilteredUsers = users.filter((user)=> countryNames.includes(user?.location.country));
+    setFilteredUsers(newfilteredUsers);
+  }
+
+  const getAllCheckedCountryNames = () =>{
+    const countryNames = Object.keys(checkedCountries).map((key)=>{
+      if(checkedCountries[key]){return COUNTRY_NAMES_BY_ISO_2[key]}
+    });
+    return countryNames;
+  }
+
+  const isAllUnchecked = () =>{
+    return Object.values(checkedCountries).every((value)=> value === false);
+  }
+
+  useEffect(()=>{
+    if(isAllUnchecked()){setFilteredUsers(users);}
+  },[users]);
+
   return (
     <S.UserList>
       <S.Filters>
-        <CheckBox value="BR" label="Brazil" />
-        <CheckBox value="AU" label="Australia" />
-        <CheckBox value="CA" label="Canada" />
-        <CheckBox value="DE" label="Germany" />
+        <CheckBox value="ES" label="Spain" onChange={filterUsersAccordingToCountry} isChecked={checkedCountries["ES"]} />
+        <CheckBox value="BR" label="Brazil" onChange={filterUsersAccordingToCountry} isChecked={checkedCountries["BR"]} />
+        <CheckBox value="AU" label="Australia" onChange={filterUsersAccordingToCountry} isChecked={checkedCountries["AU"]}/>
+        <CheckBox value="CA" label="Canada" onChange={filterUsersAccordingToCountry} isChecked={checkedCountries["CA"]}/>
+        <CheckBox value="DE" label="Germany" onChange={filterUsersAccordingToCountry} isChecked={checkedCountries["DE"]}/>
       </S.Filters>
       <S.List>
-        {users.map((user, index) => {
+        {filteredUsers.map((user, index) => {
           return (
             <S.User
               key={index}
