@@ -14,7 +14,7 @@ const COUNTRY_NAMES_BY_ISO_2 = {
   "ES": "Spain"
 }
 
-const UserList = ({ users, isLoading, callSetDidFavoritesUpdate }) => {
+const UserList = React.forwardRef(({ users, isLoading, callSetDidFavoritesUpdate, setUsersRef }, usersRef) => {
   const [hoveredUserId, setHoveredUserId] = useState();
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [checkedCountries, setCheckedCountries] = useState({
@@ -99,6 +99,10 @@ const UserList = ({ users, isLoading, callSetDidFavoritesUpdate }) => {
     setFavoriteUsersFromLocalStorage();
   },[]);
 
+  useEffect(()=>{
+    if(setUsersRef){setUsersRef(usersRef)}
+  },[usersRef?.current]);
+
   return (
     <S.UserList>
       <S.Filters>
@@ -115,18 +119,19 @@ const UserList = ({ users, isLoading, callSetDidFavoritesUpdate }) => {
               key={index}
               onMouseEnter={() => handleMouseEnter(index)}
               onMouseLeave={handleMouseLeave}
+              ref={(index+1 === users?.length)? usersRef: null}
             >
-              <S.UserPicture src={user?.picture.large} alt="" />
+              <S.UserPicture src={user?.picture?.large} alt="" />
               <S.UserInfo>
                 <Text size="22px" bold>
-                  {user?.name.title} {user?.name.first} {user?.name.last}
+                  {user?.name?.title} {user?.name?.first} {user?.name?.last}
                 </Text>
                 <Text size="14px">{user?.email}</Text>
                 <Text size="14px">
-                  {user?.location.street.number} {user?.location.street.name}
+                  {user?.location?.street?.number} {user?.location?.street?.name}
                 </Text>
                 <Text size="14px">
-                  {user?.location.city} {user?.location.country}
+                  {user?.location?.city} {user?.location?.country}
                 </Text>
               </S.UserInfo>
               <S.IconButtonWrapper isVisible={index === hoveredUserId || favoriteUsers[user?.email]}>
@@ -147,6 +152,6 @@ const UserList = ({ users, isLoading, callSetDidFavoritesUpdate }) => {
       </S.List>
     </S.UserList>
   );
-};
+})
 
 export default UserList;

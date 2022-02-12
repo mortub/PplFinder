@@ -3,7 +3,17 @@ import axios from "axios";
 
 export const usePeopleFetch = () => {
   const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+
+  const scrollCallback = async (entries) => {
+    if (entries[0].isIntersecting) {
+      setPage(page + 1);
+      await fetchUsers();
+    }
+  };
+
+  const observer = new IntersectionObserver(scrollCallback);
 
   useEffect(() => {
     fetchUsers();
@@ -11,10 +21,11 @@ export const usePeopleFetch = () => {
 
   async function fetchUsers() {
     setIsLoading(true);
-    const response = await axios.get(`https://randomuser.me/api/?results=25&page=1`);
+    const response = await axios.get(`https://randomuser.me/api/?results=25&page=${page}`);
     setIsLoading(false);
-    setUsers(response.data.results);
+    const newUsers = [...users,...response.data.results];
+    setUsers(newUsers);
   }
 
-  return { users, isLoading, fetchUsers };
+  return { users, isLoading, observer };
 };
