@@ -9,15 +9,15 @@ import NavBar from "components/NavBar";
 const AppRouter = () => {
   return (
     <ThemeProvider>
-      <FavoriteUsersProvider>
       <Router>
+      <FavoriteUsersProvider>
         <NavBar />
         <Switch>
           <Route exact path="/" component={Home} />
           <Route path="/favorites" component={Favorites} />
         </Switch>
-      </Router>
       </FavoriteUsersProvider>
+      </Router>
     </ThemeProvider>
   );
 };
