@@ -22,9 +22,9 @@ export const usePeopleFetch = () => {
   async function fetchUsers() {
     setIsLoading(true);
     const response = await axios.get(`https://randomuser.me/api/?results=25&page=${page}`);
-    setIsLoading(false);
     const newUsers = [...users,...response.data.results];
     setUsers(newUsers);
+    setIsLoading(false);
   }
 
   return { users, isLoading, observer };
