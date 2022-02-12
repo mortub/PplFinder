@@ -23,11 +23,9 @@ const FavoriteUserList = ({}) => {
     }
 
     const fetchFavoriteUsers = () =>{
-        let newFavoriteUsers = localStorage.getItem('favoriteUsers');
-        if(newFavoriteUsers !== null){
-          newFavoriteUsers = JSON.parse(newFavoriteUsers);
-          setFavoriteUsers(Object.values(newFavoriteUsers));
-        }
+        let newFavoriteUsers = localStorage.getItem('favoriteUsers') ?? '{}';
+        newFavoriteUsers = JSON.parse(newFavoriteUsers);
+        setFavoriteUsers(Object.values(newFavoriteUsers));
     }
 
     useEffect(()=>{

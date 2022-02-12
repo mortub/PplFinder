@@ -1,10 +1,8 @@
 import React, { createContext, useReducer } from 'react';
 
 const fetchFavoriteUsers = () =>{
-    let newFavoriteUsers = localStorage.getItem('favoriteUsers') ?? {};
-    if(newFavoriteUsers !== null){
-      newFavoriteUsers = JSON.parse(newFavoriteUsers);
-    }
+    let newFavoriteUsers = localStorage.getItem('favoriteUsers') ?? '{}';
+    newFavoriteUsers = JSON.parse(newFavoriteUsers);
     return newFavoriteUsers;
 }
 
