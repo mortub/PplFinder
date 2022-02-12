@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import Text from "components/Text";
 import Spinner from "components/Spinner";
 import CheckBox from "components/CheckBox";
 import IconButton from "@material-ui/core/IconButton";
 import FavoriteIcon from "@material-ui/icons/Favorite";
+import { favoriteUsersContext } from '../../contexts';
 import * as S from "./style";
 
 const COUNTRY_NAMES_BY_ISO_2 = {
@@ -14,7 +15,8 @@ const COUNTRY_NAMES_BY_ISO_2 = {
   "ES": "Spain"
 }
 
-const UserList = React.forwardRef(({ users, isLoading, callSetDidFavoritesUpdate, setUsersRef }, usersRef) => {
+const UserList = React.forwardRef(({ users, isLoading, toggleFavoriteUser, setUsersRef }, usersRef) => {
+  const {state, dispatch } = useContext(favoriteUsersContext);
   const [hoveredUserId, setHoveredUserId] = useState();
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [checkedCountries, setCheckedCountries] = useState({
@@ -24,25 +26,6 @@ const UserList = React.forwardRef(({ users, isLoading, callSetDidFavoritesUpdate
     "DE":false,
     "ES":false
   });
-  const [favoriteUsers, setFavoriteUsers] = useState({});
-
-  const toggleFavoriteUser = (user) =>{
-    const newFavoriteUsers = createNewFavoriteUsers(user);
-    setFavoriteUsers(newFavoriteUsers);
-    localStorage.setItem('favoriteUsers', JSON.stringify(newFavoriteUsers));
-    if(callSetDidFavoritesUpdate){callSetDidFavoritesUpdate()}
-  }
-
-  const createNewFavoriteUsers = (user) =>{
-    const userId = user?.email;
-    const newFavoriteUsers = {...favoriteUsers};
-
-    if(newFavoriteUsers[userId]){ delete newFavoriteUsers[userId];
-    }else{
-      newFavoriteUsers[userId] = user;
-    }
-    return newFavoriteUsers;
-  }
 
   const handleMouseEnter = (index) => {
     setHoveredUserId(index);
@@ -83,21 +66,9 @@ const UserList = React.forwardRef(({ users, isLoading, callSetDidFavoritesUpdate
     return Object.values(checkedCountries).every((value)=> value === false);
   }
 
-  const setFavoriteUsersFromLocalStorage = () =>{
-    let newFavoriteUsers = localStorage.getItem('favoriteUsers');
-    if(newFavoriteUsers !== null){
-      newFavoriteUsers = JSON.parse(newFavoriteUsers);
-      setFavoriteUsers(newFavoriteUsers);
-    }
-  }
-
   useEffect(()=>{
     if(isAllUnchecked()){setFilteredUsers(users);}
   },[users]);
-
-  useEffect(()=>{
-    setFavoriteUsersFromLocalStorage();
-  },[]);
 
   useEffect(()=>{
     if(setUsersRef){setUsersRef(usersRef)}
@@ -134,7 +105,7 @@ const UserList = React.forwardRef(({ users, isLoading, callSetDidFavoritesUpdate
                   {user?.location?.city} {user?.location?.country}
                 </Text>
               </S.UserInfo>
-              <S.IconButtonWrapper isVisible={index === hoveredUserId || favoriteUsers[user?.email]}>
+              <S.IconButtonWrapper isVisible={index === hoveredUserId || state &&state[user?.email]}>
                 <div onClick={() =>toggleFavoriteUser(user)}>
                 <IconButton>
                   <FavoriteIcon color="error" />
